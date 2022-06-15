@@ -69,12 +69,12 @@ void sls_io(const char *filename, int flag) {
 		curID += L;
 	}
 
+	printf("[sls_io]\n");
+	if (flag) print_ans(ans, K, C);
+
 	fclose(fp);
 	free(v);
 	free(ans);
-
-	printf("[sls_io]\n");
-	if (flag) print_ans(ans, K, C);
 }
 
 void sls_dram(const char *filename, int flag) {
@@ -102,7 +102,7 @@ void sls_dram(const char *filename, int flag) {
 	int* IDs = (int*) malloc (sizeof(int) * sumID);
 	for (int i=0; i<sumID; ++i)
 		IDs[i] = rand() % R;
-
+	
 	int curID = 0, outID = 0;
 
 	double *ans = (double *) malloc(sizeof(double) * K * C);
@@ -122,9 +122,9 @@ void sls_dram(const char *filename, int flag) {
 		curID += L;
 	}
 
-	munmap(map, R * C * sizeof(double));
-	free(ans);
-
 	printf("[sls_dram]\n");
 	if (flag) print_ans(ans, K, C);
+
+	munmap(map, R * C * sizeof(double));
+	free(ans);
 }

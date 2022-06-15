@@ -4,9 +4,9 @@
 using namespace std;
 
 int main() {
-	const char *filename = "table/rmc1";
+	const char *filename = "/home/nctu/Desktop/table";
 	sls_io(filename, 1);
-	// sls_dram(filename, 1);
+	sls_dram(filename, 1);
 
 	return 0;
 }
