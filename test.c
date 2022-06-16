@@ -10,8 +10,8 @@ int main() {
 	sls_config *config = malloc(5 * sizeof(u32));
 	config->emb_row = 4000000;
 	config->emb_col = 32;
-	config->lengths = 80;
-	config->lengths_size = 1;
+	config->lengths = 100;
+	config->lengths_size = 2;
 
 	u32 total = config->lengths * config->lengths_size;
 
@@ -22,8 +22,10 @@ int main() {
 	config->ids = ids;
 
 	const char *table = "table/rmc1";
-	sls_io(table, config, 1);
-	sls_dram(table, config, 1);
+	sls_io_buf(table, config, 1);
+	sls_io_unbuf(table, config, 1);
+	sls_mmap(table, config, 1);
+	sls_ram(table, config, 1);
 
 	free(ids);
 

@@ -24,7 +24,9 @@ typedef struct {
 } sls_config;
 
 
-void sls_io(const char *table, sls_config *config, int flag);
-void sls_dram(const char *table, sls_config *config, int flag);
+void sls_io_buf(const char *table, sls_config *config, int flag);
+void sls_io_unbuf(const char *table, sls_config *config, int flag);
+void sls_mmap(const char *table, sls_config *config, int flag);
+void sls_ram(const char *table, sls_config *config, int flag);
 
 #endif
