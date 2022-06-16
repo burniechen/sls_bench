@@ -27,7 +27,9 @@ struct sls_config {
 	std::vector<u32> ids;	// ids-list
 
 	sls_config(std::string filename, u32 R, u32 C, u32 L, u32 K) 
-	: table(filename), emb_row(R), emb_col(C), lengths(L), lengths_size(K) {
+	: table(filename), emb_row(R), emb_col(C), lengths(L), lengths_size(K) {};
+
+	void gen_ids() {
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::uniform_int_distribution<u32> dis(0, emb_row-1);
@@ -36,13 +38,15 @@ struct sls_config {
 		ids = std::vector<u32> (total);
 		for (auto &ID : ids)
 			ID = dis(gen);
-	};
+	}
 };
 
+void pre_hook(sls_config *config, std::string pre_state);
+void post_hook(sls_config *config, std::string post_state);
 
-void sls_io_buf(sls_config *config, bool flag);
-void sls_io_unbuf(sls_config *config, bool flag);
-void sls_mmap(sls_config *config, bool flag);
-void sls_ram(sls_config *config, bool flag);
+void sls_io_buf(sls_config *config);
+void sls_io_unbuf(sls_config *config);
+void sls_mmap(sls_config *config);
+void sls_ram(sls_config *config);
 
 #endif

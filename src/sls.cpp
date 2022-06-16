@@ -13,6 +13,25 @@
 
 using namespace std;
 
+void pre_hook(sls_config *config, string s) {
+	printf("-------- [BEG] %s --------\n", s.c_str());
+
+	std::system("echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null");
+	config->gen_ids();
+
+	printf("emb-table: %s\n", config->table.c_str());
+	printf("emb-size: %u\n", config->emb_row);
+	printf("feature-size: %u\n", config->emb_col);
+	printf("num-indices-per-lookup: %u\n", config->lengths);
+	printf("batch-size: %u\n", config->lengths_size);
+	printf("total-lookup: %lu\n", config->ids.size());
+}
+
+void post_hook(sls_config *config, string s) {
+	printf("output-size: %ux%u\n", config->lengths_size, config->emb_col);
+	printf("-------- [END] %s --------\n\n", s.c_str());
+}
+
 void emb_vec_io_buf(FILE *fp, vector<double> &v, u32 ID) {
 	rewind(fp);
 	fseek(fp, v.size() * ID * sizeof(double), SEEK_SET);
@@ -24,7 +43,7 @@ void emb_vec_io_unbuf(int fd, vector<double> &v, u32 ID) {
 	read(fd, &v[0], v.size() * sizeof(double));
 }
 
-void sls_io_buf(sls_config *config, bool flag) {
+void sls_io_buf(sls_config *config) {
 	FILE *fp = fopen(config->table.c_str(), "rb");
 	if (fp == NULL) {
 		fputs("File error", stderr);
@@ -57,16 +76,10 @@ void sls_io_buf(sls_config *config, bool flag) {
 		curID += L;
 	}
 
-	printf("[sls_io_buf]\n");
-	if (flag) 
-		for (auto e : ans)
-			cout << e << ' ';
-	cout << endl;
-
 	fclose(fp);
 }
 
-void sls_io_unbuf(sls_config *config, bool flag) {
+void sls_io_unbuf(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
         perror("open");
@@ -99,16 +112,10 @@ void sls_io_unbuf(sls_config *config, bool flag) {
 		curID += L;
 	}
 
-	printf("[sls_io_unbuf]\n");
-	if (flag) 
-		for (auto e : ans)
-			cout << e << ' ';
-	cout << endl;
-
 	close(fd);
 }
 
-void sls_mmap(sls_config *config, bool flag) {
+void sls_mmap(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
         perror("open");
@@ -141,17 +148,11 @@ void sls_mmap(sls_config *config, bool flag) {
 		curID += L;
 	}
 
-	printf("[sls_mmap]\n");
-	if (flag) 
-		for (auto e : ans)
-			cout << e << ' ';
-	cout << endl;
-
 	munmap(map, R * C * sizeof(double));
 	close(fd);
 }
 
-void sls_ram(sls_config *config, bool flag) {
+void sls_ram(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
         perror("open");
@@ -184,12 +185,6 @@ void sls_ram(sls_config *config, bool flag) {
 		outID += 1;
 		curID += L;
 	}
-
-	printf("[sls_ram]\n");
-	if (flag) 
-		for (auto e : ans)
-			cout << e << ' ';
-	cout << endl;
 
 	close(fd);
 }
