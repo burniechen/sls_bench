@@ -7,11 +7,11 @@
 using namespace std;
 
 int main() {
-	u64 rnd = 4;
-	int level = 7;
+	auto rnd = 4;
+	auto power = 7;
 	ofstream fout("rmc2.csv");
 
-	for (auto i=0; i<level; ++i) {
+	for (auto i=0; i<power; ++i) {
 		sls_config *config = new sls_config("table/rmc2", 500000, 64, 120, 1<<i);
 		auto test_io_buf = bind(sls_io_buf, config);
 		auto pre_io_buf = bind(pre_hook, config, "io_buf");

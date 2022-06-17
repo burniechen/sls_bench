@@ -16,7 +16,7 @@ using namespace std;
 void pre_hook(sls_config *config, string s) {
 	printf("-------- [BEG] %s --------\n", s.c_str());
 
-	std::system("echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null");
+	system("echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null");
 	config->gen_ids();
 
 	printf("emb-table: %s\n", config->table.c_str());
@@ -82,9 +82,9 @@ void sls_io_buf(sls_config *config) {
 void sls_io_unbuf(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
+		perror("open");
+		exit(EXIT_FAILURE);
+	}
 
 	struct stat sb;
 	if (stat(config->table.c_str(), &sb) == -1) {
@@ -118,9 +118,9 @@ void sls_io_unbuf(sls_config *config) {
 void sls_mmap(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
+		perror("open");
+		exit(EXIT_FAILURE);
+	}
 
 	struct stat sb;
 	if (stat(config->table.c_str(), &sb) == -1) {
@@ -155,9 +155,9 @@ void sls_mmap(sls_config *config) {
 void sls_ram(sls_config *config) {
 	int fd = open(config->table.c_str(), O_RDONLY);
 	if (fd == -1) {
-        perror("open");
-        exit(EXIT_FAILURE);
-    }
+		perror("open");
+		exit(EXIT_FAILURE);
+	}
 
 	struct stat sb;
 	if (stat(config->table.c_str(), &sb) == -1) {
