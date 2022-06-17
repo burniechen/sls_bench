@@ -7,12 +7,12 @@
 using namespace std;
 
 int main() {
-	constexpr auto rnd = 5UL;
+	u64 rnd = 4;
 	int level = 7;
-	ofstream fout("rmc1.csv");
+	ofstream fout("rmc2.csv");
 
 	for (auto i=0; i<level; ++i) {
-		sls_config *config = new sls_config("table/rmc1", 4000000, 32, 80, 1<<i);
+		sls_config *config = new sls_config("table/rmc2", 500000, 64, 120, 1<<i);
 		auto test_io_buf = bind(sls_io_buf, config);
 		auto pre_io_buf = bind(pre_hook, config, "io_buf");
 		auto post_io_buf = bind(post_hook, config, "io_buf");
@@ -29,12 +29,12 @@ int main() {
 		auto pre_ram = bind(pre_hook, config, "ram");
 		auto post_ram = bind(post_hook, config, "ram");
 
-		auto bench_io_buf = bp::real_time(test_io_buf, pre_io_buf, post_io_buf);
-		auto bench_io_unbuf = bp::real_time(test_io_unbuf, pre_io_unbuf, post_io_unbuf);
-		auto bench_mmap = bp::real_time(test_mmap, pre_mmap, post_mmap);
-		auto bench_ram = bp::real_time(test_ram, pre_ram, post_ram);
+		auto bench_io_buf = bm::real_time(test_io_buf, pre_io_buf, post_io_buf);
+		auto bench_io_unbuf = bm::real_time(test_io_unbuf, pre_io_unbuf, post_io_unbuf);
+		auto bench_mmap = bm::real_time(test_mmap, pre_mmap, post_mmap);
+		auto bench_ram = bm::real_time(test_ram, pre_ram, post_ram);
 
-		auto result = bp::bench(rnd, bp::excl_avg<1>, 
+		auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, 
 								bench_io_buf, 
 								bench_io_unbuf,
 								bench_mmap,
