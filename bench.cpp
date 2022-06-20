@@ -13,6 +13,7 @@ int main() {
 
 	for (auto i=0; i<power; ++i) {
 		sls_config *config = new sls_config("table/rmc3", 2000000, 32, 20, 1<<i);
+
 		auto test_io_buf = bind(sls_io_buf, config);
 		auto pre_io_buf = bind(pre_hook, config, "io_buf");
 		auto post_io_buf = bind(post_hook, config, "io_buf");
@@ -20,7 +21,8 @@ int main() {
 		auto test_io_unbuf = bind(sls_io_unbuf, config);
 		auto pre_io_unbuf = bind(pre_hook, config, "io_unbuf");
 		auto post_io_unbuf = bind(post_hook, config, "io_unbuf");
-auto test_mmap = bind(sls_mmap, config);
+
+		auto test_mmap = bind(sls_mmap, config);
 		auto pre_mmap = bind(pre_hook, config, "mmap");
 		auto post_mmap = bind(post_hook, config, "mmap");
 
@@ -49,6 +51,7 @@ auto test_mmap = bind(sls_mmap, config);
 		fout << endl;
 
 		delete config;
+		fout.close();
 	}
 
 	return 0;
