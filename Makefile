@@ -1,5 +1,5 @@
-CC = g++-10
-CFLAGS = -Wall -Wextra -Wshadow -Wpedantic -O2 -std=c++20
+CC = clang++-12
+CFLAGS = -Wall -Wextra -Wshadow -Wpedantic -O1 -std=c++20 -fsanitize=address -g
 
 .PHONY: all clean
 

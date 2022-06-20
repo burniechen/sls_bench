@@ -57,7 +57,7 @@ void sls_io_buf(sls_config *config) {
 	}
 
 	auto C = config->emb_col;
-	auto K = config->lengths_size;
+	auto K = config->lengths;
 	auto Lengths = vector<u32> (K, config->lengths_size);
 	auto v = vector<double> (C, 0);
 	auto ans = vector<double> (K * C, 0);
@@ -93,7 +93,7 @@ void sls_io_unbuf(sls_config *config) {
 	}
 
 	auto C = config->emb_col;
-	auto K = config->lengths_size;
+	auto K = config->lengths;
 	auto Lengths = vector<u32> (K, config->lengths_size);
 	auto v = vector<double> (C, 0);
 	auto ans = vector<double> (K * C, 0);
@@ -130,7 +130,7 @@ void sls_mmap(sls_config *config) {
 
 	auto R = config->emb_row;
 	auto C = config->emb_col;
-	auto K = config->lengths_size;
+	auto K = config->lengths;
 	auto Lengths = vector<u32> (K, config->lengths_size);
 	auto ans = vector<double> (K * C, 0);
 
@@ -147,6 +147,7 @@ void sls_mmap(sls_config *config) {
 		outID += 1;
 		curID += L;
 	}
+	cout << endl;
 
 	munmap(map, R * C * sizeof(double));
 	close(fd);
@@ -167,7 +168,7 @@ void sls_ram(sls_config *config) {
 	
 	auto R = config->emb_row;
 	auto C = config->emb_col;
-	auto K = config->lengths_size;
+	auto K = config->lengths;
 	auto Lengths = vector<u32> (K, config->lengths_size);
 	auto ans = vector<double> (K * C, 0);
 

@@ -9,10 +9,10 @@ using namespace std;
 int main() {
 	auto rnd = 4;
 	auto power = 7;
-	ofstream fout("rmc2.csv");
+	ofstream fout("rmc3.csv");
 
 	for (auto i=0; i<power; ++i) {
-		sls_config *config = new sls_config("table/rmc2", 500000, 64, 120, 1<<i);
+		sls_config *config = new sls_config("table/rmc3", 2000000, 32, 20, 1<<i);
 		auto test_io_buf = bind(sls_io_buf, config);
 		auto pre_io_buf = bind(pre_hook, config, "io_buf");
 		auto post_io_buf = bind(post_hook, config, "io_buf");
@@ -20,8 +20,7 @@ int main() {
 		auto test_io_unbuf = bind(sls_io_unbuf, config);
 		auto pre_io_unbuf = bind(pre_hook, config, "io_unbuf");
 		auto post_io_unbuf = bind(post_hook, config, "io_unbuf");
-
-		auto test_mmap = bind(sls_mmap, config);
+auto test_mmap = bind(sls_mmap, config);
 		auto pre_mmap = bind(pre_hook, config, "mmap");
 		auto post_mmap = bind(post_hook, config, "mmap");
 
@@ -34,7 +33,7 @@ int main() {
 		auto bench_mmap = bm::real_time(test_mmap, pre_mmap, post_mmap);
 		auto bench_ram = bm::real_time(test_ram, pre_ram, post_ram);
 
-		auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, 
+		auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>,
 								bench_io_buf, 
 								bench_io_unbuf,
 								bench_mmap,
@@ -48,6 +47,8 @@ int main() {
 		}
 		cout << endl;
 		fout << endl;
+
+		delete config;
 	}
 
 	return 0;
