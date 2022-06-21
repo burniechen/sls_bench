@@ -1,3 +1,4 @@
+#include <exception>
 #include <iostream> 
 #include <fstream>
 #include <string>
@@ -25,7 +26,6 @@ void parse_arg(map<string, string> &m, string target, string pattern) {
 
 	val = target.substr(begin, end - begin);
 
-	cout << key << ',' << val << endl;
 	m.insert(make_pair(key, val));
 }
 
@@ -34,18 +34,25 @@ int main(int argc, char *argv[]) {
 	for (int i=1; i<argc; ++i)
 		parse_arg(arg, argv[i], "=");
 
-	auto rnd = 1;
-	auto power = 1;
+	auto rnd = 1, power = 1;
 
-	auto dir = arg["--dir"];
-	dir = regex_replace(dir, regex("~/"), "/home/nctu/");
-	auto R = stoi(arg["--embedding-size"]);
-	auto C = stoi(arg["--feature-size"]);
-	// auto K = stoi(arg["--lengths-count"]); // batch-size
-	auto L = stoi(arg["--num-indices-per-lookup"]);
-	auto type = arg["--type"];
+	auto dir = string(), type = string();
+	auto R=0, C=0, L=0;
 
-	void (*fun)(sls_config*);
+	try {
+		dir = arg["--dir"];
+		dir = regex_replace(dir, regex("~/"), "/home/nctu/");
+		R = stoi(arg["--embedding-size"]);
+		C = stoi(arg["--feature-size"]);
+		// auto K = stoi(arg["--lengths-count"]); // batch-size
+		L = stoi(arg["--num-indices-per-lookup"]);
+		type = arg["--type"];
+	} catch (exception &e) {
+		cout << e.what() << endl;
+		exit(1);
+	}
+
+	void (*fun)(sls_config*) = nullptr;
 	if (type == "io_buf") fun = &sls_io_buf;
 	if (type == "io_unbuf") fun = &sls_io_unbuf;
 	if (type == "mmap") fun = &sls_mmap;
@@ -61,9 +68,7 @@ int main(int argc, char *argv[]) {
 			auto pre_fun = bind(pre_hook, config, type);
 			auto post_fun = bind(post_hook, config, type);
 
-			auto bench_fun = bm::real_time(test_fun, 
-											pre_fun, 
-											post_fun);
+			auto bench_fun = bm::real_time(test_fun, pre_fun, post_fun);
 
 			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_fun);
 			sum += (result.count()/1000);
