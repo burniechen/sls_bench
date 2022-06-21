@@ -22,12 +22,12 @@ struct sls_config {
 	std::string table;		// filename
 	u32 emb_row;			// R, embedding-size
 	u32 emb_col;			// C, feature-size
-	u32 lengths;			// num-indices-per-lookup
-	u32 lengths_size;		// K, tables
+	u32 lengths;			// K, lengths-count, batch-size
+	u32 lengths_size;		// L, num-indices-per-lookup
 	std::vector<u32> ids;	// ids-list
 
-	sls_config(std::string filename, u32 R, u32 C, u32 L, u32 K) 
-	: table(filename), emb_row(R), emb_col(C), lengths(L), lengths_size(K) {};
+	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L) 
+	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L) {};
 
 	void gen_ids() {
 		std::random_device rd;

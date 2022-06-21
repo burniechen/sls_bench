@@ -8,11 +8,17 @@ all: sls_bench
 sls_bench: bench.o sls.o 
 	$(CC) $(CFLAGS) -o bench bench.o sls.o
 
+run_each: each.o sls.o
+	$(CC) $(CFLAGS) -o each each.o sls.o
+
 bench.o: bench.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+each.o: each.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 sls.o: src/sls.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f bench bench.o sls.o
+	rm -f bench bench.o each each.o sls.o

@@ -11,18 +11,18 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 1;
-	auto power = 1;
-	ofstream fout("rmc1.csv");
-	bool fout_flag = false;
+	auto rnd = 4;
+	auto power = 7;
+	ofstream fout("rmc3.csv");
+	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm1/";
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
 	auto sum = vector<vector<double>> (power, vector<double> (4, 0));
 
 	for (auto i=0; i<power; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
 			string emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, 4000000, 32, 80, 1<<i);
+			sls_config *config = new sls_config(emb, 2000000, 32, 1<<i, 20);
 
 			auto test_io_buf = bind(sls_io_buf, config);
 			auto pre_io_buf = bind(pre_hook, config, "io_buf"); 

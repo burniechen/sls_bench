@@ -22,13 +22,13 @@ void pre_hook(sls_config *config, string s) {
 	printf("emb-table: %s\n", config->table.c_str());
 	printf("emb-size: %u\n", config->emb_row);
 	printf("feature-size: %u\n", config->emb_col);
-	printf("num-indices-per-lookup: %u\n", config->lengths);
-	printf("batch-size: %u\n", config->lengths_size);
+	printf("batch-size: %u\n", config->lengths);
+	printf("num-indices-per-lookup: %u\n", config->lengths_size);
 	printf("total-lookup: %lu\n", config->ids.size());
 }
 
 void post_hook(sls_config *config, string s) {
-	printf("output-size: %ux%u\n", config->lengths_size, config->emb_col);
+	printf("output-size: %ux%u\n", config->lengths, config->emb_col);
 	printf("-------- [END] %s --------\n\n", s.c_str());
 }
 
