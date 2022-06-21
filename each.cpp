@@ -73,9 +73,7 @@ int main(int argc, char *argv[]) {
 			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_fun);
 			sum += (result.count()/1000);
 
-			cout << "[Time]\n";
-			printf("(%s, %d): %lu\n", emb.c_str(), (1<<i), result.count()/1000);
-			cout << endl;
+			printf("[Time]\n(%s, %d): %lu\n\n", emb.c_str(), (1<<i), result.count()/1000);
 
 			delete config;
 		}
