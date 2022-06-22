@@ -1,4 +1,3 @@
-#include <exception>
 #include <iostream> 
 #include <fstream>
 #include <string>
@@ -6,6 +5,7 @@
 #include <map>
 #include <filesystem>
 #include <regex>
+#include <exception>
 
 #include "src/sls.hpp"
 #include "src/bench.hpp"
@@ -31,10 +31,10 @@ void parse_arg(map<string, string> &m, string target, string pattern) {
 
 int main(int argc, char *argv[]) {
 	auto arg = map<string, string> ();
-	for (int i=1; i<argc; ++i)
+	for (auto i=1; i<argc; ++i)
 		parse_arg(arg, argv[i], "=");
 
-	auto rnd = 1, power = 1;
+	auto rnd = 5, power = 1;
 
 	auto dir = string(), type = string();
 	auto R=0, C=0, L=0;
