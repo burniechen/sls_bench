@@ -25,9 +25,10 @@ struct sls_config {
 	u32 lengths;			// K, lengths-count, batch-size
 	u32 lengths_size;		// L, num-indices-per-lookup
 	std::vector<u32> ids;	// ids-list
+	u32 ram_ratio;
 
-	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L) 
-	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L) {};
+	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L, u32 val) 
+	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L), ram_ratio(val) {};
 
 	void gen_ids() {
 		std::random_device rd;

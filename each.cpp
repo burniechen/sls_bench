@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 	for (auto i=shift-1; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(dir)) {
 			auto emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, R, C, 1<<i, L);
+			sls_config *config = new sls_config(emb, R, C, 1<<i, L, 2);
 
 			auto test_fun = bind(*fun, config);
 			auto pre_fun = bind(pre_hook, config, type);

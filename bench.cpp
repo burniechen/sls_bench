@@ -22,7 +22,7 @@ int main() {
 	for (auto i=0; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
 			string emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, 500000, 64, 1<<i, 120);
+			sls_config *config = new sls_config(emb, 500000, 64, 1<<i, 120, 2);
 
 			auto test_io_buf = bind(sls_io_buf, config);
 			auto pre_io_buf = bind(pre_hook, config, "io_buf"); 

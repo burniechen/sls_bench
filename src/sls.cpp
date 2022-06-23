@@ -25,6 +25,7 @@ void pre_hook(sls_config *config, string s) {
 	printf("batch-size: %u\n", config->lengths);
 	printf("num-indices-per-lookup: %u\n", config->lengths_size);
 	printf("total-lookup: %lu\n", config->ids.size());
+	printf("ram-ratio: %u\n", config->ram_ratio);
 }
 
 void post_hook(sls_config *config, string s) {
@@ -209,7 +210,7 @@ void sls_ratio(sls_config *config) {
 	auto Lengths = vector<u32> (K, config->lengths_size);
 	auto ans = vector<double> (K * C, 0);
 
-	auto ratio = 8;
+	auto ratio = config->ram_ratio;
 	auto R_size = (u32) R/10;
 	auto ratio_R = ratio * R_size;
 
