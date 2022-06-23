@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <vector>
+#include <numeric>
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -9,7 +10,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <time.h>
 
 using namespace std;
 
@@ -182,6 +182,55 @@ void sls_ram(sls_config *config) {
 			u32 ID = config->ids[j];
 			for (size_t idx = 0; idx < C; ++idx)
 				ans[outID * C + idx] += emb[ID * C + idx];
+		}
+		outID += 1;
+		curID += L;
+	}
+
+	close(fd);
+}
+
+void sls_ratio(sls_config *config) {
+	int fd = open(config->table.c_str(), O_RDONLY);
+	if (fd == -1) {
+		perror("open");
+		exit(EXIT_FAILURE);
+	}
+
+	struct stat sb;
+	if (stat(config->table.c_str(), &sb) == -1) {
+		perror("stat");
+		exit(EXIT_FAILURE);
+	}
+	
+	auto R = config->emb_row;
+	auto C = config->emb_col;
+	auto K = config->lengths;
+	auto Lengths = vector<u32> (K, config->lengths_size);
+	auto ans = vector<double> (K * C, 0);
+
+	auto ratio = 8;
+	auto R_size = (u32) R/10;
+	auto ratio_R = ratio * R_size;
+
+	auto ratio_emb = vector<double> (ratio_R * C);
+	read(fd, &ratio_emb[0], ratio_R * C * sizeof(double));
+
+	auto v = vector<double> (C, 0);
+	int curID = 0, outID = 0;
+	// sls
+	for (auto L : Lengths) {
+		for (size_t j = curID; j < curID + L; ++j) {
+			u32 ID = config->ids[j];
+
+			if (ID > ratio_R-1) {
+				emb_vec_io_unbuf(fd, v, ID);
+				for (size_t idx = 0; idx < C; ++idx)
+					ans[outID * C + idx] += v[idx];
+			}
+			else 
+				for (size_t idx = 0; idx < C; ++idx) 
+					ans[outID * C + idx] += ratio_emb[ID * C + idx];
 		}
 		outID += 1;
 		curID += L;

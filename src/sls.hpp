@@ -48,5 +48,6 @@ void sls_io_buf(sls_config *config);
 void sls_io_unbuf(sls_config *config);
 void sls_mmap(sls_config *config);
 void sls_ram(sls_config *config);
+void sls_ratio(sls_config *config);
 
 #endif
