@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	for (auto i=1; i<argc; ++i)
 		parse_arg(arg, argv[i], "=");
 
-	auto rnd = 5, shift = 1;
+	auto rnd = 4, shift = 8;
 
 	auto dir = string(), type = string();
 	auto R=0, C=0, L=0;
@@ -52,19 +52,20 @@ int main(int argc, char *argv[]) {
 	}
 
 	void (*fun)(sls_config*) = nullptr;
-	if (type == "io_buf") fun = &sls_io_buf;
-	if (type == "io_unbuf") fun = &sls_io_unbuf;
-	if (type == "mmap") fun = &sls_mmap;
-	if (type == "ram") fun = &sls_ram;
-	if (type == "ratio") fun = &sls_ratio;
+	if (type == "io_buf") fun = sls_io_buf;
+	if (type == "io_unbuf") fun = sls_io_unbuf;
+	if (type == "mmap") fun = sls_mmap;
+	if (type == "ram") fun = sls_ram;
+	if (type == "ratio") fun = sls_ratio;
+	if (type == "opt") fun = sls_opt;
 
 	auto sum = 0;
 	for (auto i=shift-1; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(dir)) {
 			auto emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, R, C, 1<<i, L, 2);
+			sls_config *config = new sls_config(emb, R, C, 1<<i, L, 1);
 
-			auto test_fun = bind(*fun, config);
+			auto test_fun = bind(fun, config);
 			auto pre_fun = bind(pre_hook, config, type);
 			auto post_fun = bind(post_hook, config, type);
 
