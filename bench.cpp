@@ -13,7 +13,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 5;
+	auto rnd = 5ul;
 	auto shift = 7ul;
 
 	auto types = vector<string> {
@@ -37,27 +37,28 @@ int main() {
 	ofstream fout("rmc3.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
-	auto sum = vector<vector<double>> (shift, vector<double> (types.size(), 0));
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm1/";
+	auto sum = vector<vector<u64>> (shift, vector<u64> (types.size(), 0));
 
 	for (auto i=0ul; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
-			string emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, 2000000, 32, 1<<i, 20, 1);
+			auto emb = fs::absolute(it);
+			auto *config = new sls_config(emb, 4000000, 32, 1<<i, 80, 1);
 
 			auto test_funs = map< string, function<void()> > ();
 			auto  pre_funs = map< string, function<void()> > ();
 			auto post_funs = map< string, function<void()> > ();
 
 			for (auto idx=0ul; idx<types.size(); ++idx) {
-				auto T = types[idx];
-				auto F = bind(funs[idx], config);
-				auto pre  = bind(pre_hook, config, T);
-				auto post = bind(pre_hook, config, T);
+				auto str = types[idx];
 
-				test_funs.insert(make_pair(T, F));
-				pre_funs.insert(make_pair(T, pre));
-				post_funs.insert(make_pair(T, post));
+				auto test = bind(funs[idx], config);
+				auto pre  = bind(pre_hook, config, str);
+				auto post = bind(post_hook, config, str);
+
+				test_funs.insert(make_pair(str, test));
+				pre_funs.insert(make_pair(str, pre));
+				post_funs.insert(make_pair(str, post));
 			}
 
 			auto bench_io_buf = bm::real_time(test_funs["io_buf"], pre_funs["io_buf"], post_funs["io_buf"]);
@@ -78,7 +79,8 @@ int main() {
 			cout << "[Time]\n";
 			auto type_idx = 0ul;
 			for (auto e : result) {
-				printf("[%lu] (%s, %d): %lu\n", type_idx, emb.c_str(), (1<<i), e.count()/1000);
+				printf("[%8s] (%s, %d): %8lu µs\n", 
+						types[type_idx].c_str(), emb.c_str(), (1<<i), e.count()/1000);
 				sum[i][type_idx] += (e.count()/1000);
 				type_idx++;
 			}
@@ -91,7 +93,7 @@ int main() {
 	cout << "[Break down]\n";
 	for (auto r : sum) {
 		for (auto e : r)
-			cout << e << ' ';
+			printf("%10lu", e);
 		cout << endl;
 	}
 
