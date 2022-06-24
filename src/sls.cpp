@@ -1,8 +1,10 @@
 #include "sls.hpp"
 
 #include <iostream>
+#include <iterator>
 #include <vector>
 #include <numeric>
+#include <algorithm>
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -17,7 +19,7 @@ void pre_hook(sls_config *config, string s) {
 	printf("-------- [BEG] %s --------\n", s.c_str());
 
 	system("echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null");
-	config->gen_ids();
+	config->gen_ids(false);
 
 	printf("emb-table: %s\n", config->table.c_str());
 	printf("emb-size: %u\n", config->emb_row);
@@ -232,6 +234,59 @@ void sls_ratio(sls_config *config) {
 			else 
 				for (size_t idx = 0; idx < C; ++idx) 
 					ans[outID * C + idx] += ratio_emb[ID * C + idx];
+		}
+		outID += 1;
+		curID += L;
+	}
+
+	close(fd);
+}
+
+void sls_opt(sls_config *config) {
+	int fd = open(config->table.c_str(), O_RDONLY);
+	if (fd == -1) {
+		perror("open");
+		exit(EXIT_FAILURE);
+	}
+
+	struct stat sb;
+	if (stat(config->table.c_str(), &sb) == -1) {
+		perror("stat");
+		exit(EXIT_FAILURE);
+	}
+	
+	auto R = config->emb_row;
+	auto C = config->emb_col;
+	auto K = config->lengths;
+	auto Lengths = vector<u32> (K, config->lengths_size);
+	auto ans = vector<double> (K * C, 0);
+
+	auto R_size = (u32) R/10;
+	auto cnt = vector<u32> (10, 0);
+	for (auto ID : config->ids)
+		cnt[ID/R_size]++;
+	auto max_cnt = max_element(cnt.begin(), cnt.end());
+	auto max_idx = distance(cnt.begin(), max_cnt);
+
+	auto emb = vector<double> (R_size * C);
+	lseek(fd, C * (max_idx*R_size) * sizeof(double), SEEK_SET);
+	read(fd, &emb[0], R_size * C * sizeof(double));
+
+	auto v = vector<double> (C, 0);
+	int curID = 0, outID = 0;
+	// sls
+	for (auto L : Lengths) {
+		for (size_t j = curID; j < curID + L; ++j) {
+			u32 ID = config->ids[j];
+
+			if (max_idx * R_size < ID and ID < max_idx * R_size)
+				for (size_t idx = 0; idx < C; ++idx) 
+					ans[outID * C + idx] += emb[ID * C + idx];
+			else {
+				emb_vec_io_unbuf(fd, v, ID);
+				for (size_t idx = 0; idx < C; ++idx)
+					ans[outID * C + idx] += v[idx];
+			}
 		}
 		outID += 1;
 		curID += L;

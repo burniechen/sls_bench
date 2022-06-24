@@ -13,17 +13,17 @@ namespace fs = std::filesystem;
 int main() {
 	auto rnd = 4;
 	auto shift = 7;
-	auto total_type = 2;
-	ofstream fout("rmc2.csv");
+	auto total_type = 6;
+	ofstream fout("rmc3.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm2/";
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
 	auto sum = vector<vector<double>> (shift, vector<double> (total_type, 0));
 
 	for (auto i=0; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
 			string emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, 500000, 64, 1<<i, 120, 2);
+			sls_config *config = new sls_config(emb, 2000000, 32, 1<<i, 20, 1);
 
 			auto test_io_buf = bind(sls_io_buf, config);
 			auto pre_io_buf = bind(pre_hook, config, "io_buf"); 
@@ -45,20 +45,24 @@ int main() {
 			auto pre_ratio = bind(pre_hook, config, "ratio");
 			auto post_ratio = bind(post_hook, config, "ratio");
 
+			auto test_opt = bind(sls_opt, config);
+			auto pre_opt = bind(pre_hook, config, "opt");
+			auto post_opt = bind(post_hook, config, "opt");
+
 			auto bench_io_buf = bm::real_time(test_io_buf, pre_io_buf, post_io_buf);
 			auto bench_io_unbuf = bm::real_time(test_io_unbuf, pre_io_unbuf, post_io_unbuf);
 			auto bench_mmap = bm::real_time(test_mmap, pre_mmap, post_mmap);
 			auto bench_ram = bm::real_time(test_ram, pre_ram, post_ram);
 			auto bench_ratio = bm::real_time(test_ratio, pre_ratio, post_ratio);
+			auto bench_opt = bm::real_time(test_opt, pre_opt, post_opt);
 
 			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>,
-					/*
 									bench_io_buf, 
 									bench_io_unbuf,
 									bench_mmap,
-									*/
 									bench_ram,
-									bench_ratio);
+									bench_ratio,
+									bench_opt);
 
 			cout << "[Time]\n";
 			auto type = 0ul;

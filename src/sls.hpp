@@ -5,6 +5,7 @@
 #include <string>
 #include <random>
 #include <cstdint>
+#include <algorithm>
 
 #ifndef _U_TYPE
 #define _U_TYPE
@@ -30,15 +31,46 @@ struct sls_config {
 	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L, u32 val) 
 	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L), ram_ratio(val) {};
 
-	void gen_ids() {
+	void gen_ids(bool uniform) {
 		std::random_device rd;
 		std::mt19937 gen(rd());
-		std::uniform_int_distribution<u32> dis(0, emb_row-1);
-
 		auto total = lengths * lengths_size;
+
 		ids = std::vector<u32> (total);
-		for (auto &ID : ids)
-			ID = dis(gen);
+		if (uniform)
+			for (auto &ID : ids)  {
+				std::uniform_int_distribution<u32> d(0, emb_row-1);
+				ID = d(gen);
+			}
+
+		else {
+			std::uniform_int_distribution<u32> d_lookup(0, total);
+			// 0 < v0 < v1 < v2 < v3 < v4 < v5=total
+			auto v = std::vector<u32> (6, total);
+			v[0] = d_lookup(gen);
+			for (auto i=1; i<5; ++i) {
+				v[i] = d_lookup(gen);
+				while (v[i] < v[i-1]) 
+					v[i] = d_lookup(gen);
+			}
+
+			// cnt0 = v0
+			// cnt1 = v1-v0
+			// cnt2 = v2-v1
+			auto cnt = std::vector<u32> (5, 0);
+			cnt[0] = v[0];
+			for (auto i=1; i<5; ++i)
+				cnt[i] = v[i] - v[i-1];
+
+			auto c = 0;
+			auto k = emb_row/5;
+			for (auto i=0ul; i<5; ++i) {
+				std::uniform_int_distribution<u32> d(i*k, (i+1)*k-1);
+				for (auto j=0ul; j<cnt[i]; ++j)
+					ids[c] = d(gen), c++;
+			}
+			std::random_shuffle(ids.begin(), ids.end());
+		}
 	}
 };
 
@@ -50,5 +82,6 @@ void sls_io_unbuf(sls_config *config);
 void sls_mmap(sls_config *config);
 void sls_ram(sls_config *config);
 void sls_ratio(sls_config *config);
+void sls_opt(sls_config *config);
 
 #endif

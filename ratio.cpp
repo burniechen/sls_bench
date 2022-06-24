@@ -14,17 +14,17 @@ int main() {
 	auto rnd = 4;
 	auto shift = 7;
 	auto ratios = 9;
-	ofstream fout("rmc2.csv");
+	ofstream fout("rmc3.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm2/";
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
 	auto sum = vector<vector<double>> (shift, vector<double> (ratios, 0));
 
 	for (auto i=0; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
 			for (auto r=1; r<10; ++r) {
 				string emb = fs::absolute(it);
-				sls_config *config = new sls_config(emb, 500000, 64, 1<<i, 120, r);
+				sls_config *config = new sls_config(emb, 2000000, 32, 1<<i, 20, r);
 
 				auto test_ratio = bind(sls_ratio, config);
 				auto pre_ratio = bind(pre_hook, config, "ratio");
