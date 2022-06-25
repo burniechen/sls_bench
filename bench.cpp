@@ -34,7 +34,7 @@ int main() {
 		sls_opt
 	};
 
-	ofstream fout("rmc3.csv");
+	ofstream fout("rmc1.csv");
 	bool fout_flag = true;
 
 	string path = "/home/nctu/dlrm-file/dlrm/table_rm1/";
