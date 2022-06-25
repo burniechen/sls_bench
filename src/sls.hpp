@@ -6,6 +6,8 @@
 #include <random>
 #include <cstdint>
 #include <algorithm>
+#include <numeric>
+#include <map>
 
 #ifndef _U_TYPE
 #define _U_TYPE
@@ -44,31 +46,37 @@ struct sls_config {
 			}
 
 		else {
-			std::uniform_int_distribution<u32> d_lookup(0, total);
-			// 0 < v0 < v1 < v2 < v3 < v4 < v5=total
-			auto v = std::vector<u32> (6, total);
-			v[0] = d_lookup(gen);
-			for (auto i=1; i<5; ++i) {
-				v[i] = d_lookup(gen);
-				while (v[i] < v[i-1]) 
-					v[i] = d_lookup(gen);
+			std::binomial_distribution<> d1(5, 0.9);
+			std::binomial_distribution<> d2(250, 0.1);
+
+			auto m = std::map<int, int> ();
+			for (auto i=0ul; i<100; ++i)
+				m[d1(gen)]++, m[d2(gen)]++;
+
+			auto v = std::vector<u32> ();
+			for (auto [key, val] : m)
+				v.push_back(val);
+
+			auto step = (float) total / std::accumulate(v.begin(), v.end(), 0);
+			auto cnt = std::vector<u32> ();
+			for (auto e : v)
+				cnt.push_back(std::floor(e * step));
+
+			auto len = cnt.size();
+			cnt[len-1] += total - std::accumulate(cnt.begin(), cnt.end(), 0);
+
+			auto range = std::floor(emb_row/len);
+			auto ID = 0ul;
+			for (auto i=0ul; i<len; ++i) {
+				auto from = i*range;
+				auto to = (i == len-1) ? emb_row-1 : (i+1)*range;
+				std::uniform_int_distribution<u32> d_tmp(from, to);
+				for (auto j=0ul; j<cnt[i]; ++j) {
+					ids[ID] = d_tmp(gen);
+					ID++;
+				}
 			}
 
-			// cnt0 = v0
-			// cnt1 = v1-v0
-			// cnt2 = v2-v1
-			auto cnt = std::vector<u32> (5, 0);
-			cnt[0] = v[0];
-			for (auto i=1; i<5; ++i)
-				cnt[i] = v[i] - v[i-1];
-
-			auto c = 0;
-			auto k = emb_row/5;
-			for (auto i=0ul; i<5; ++i) {
-				std::uniform_int_distribution<u32> d(i*k, (i+1)*k-1);
-				for (auto j=0ul; j<cnt[i]; ++j)
-					ids[c] = d(gen), c++;
-			}
 			std::random_shuffle(ids.begin(), ids.end());
 		}
 	}

@@ -14,7 +14,7 @@ namespace fs = std::filesystem;
 
 int main() {
 	auto rnd = 5ul;
-	auto shift = 7ul;
+	auto shift = 9ul;
 
 	auto types = vector<string> {
 		"io_buf", 
@@ -34,16 +34,16 @@ int main() {
 		sls_opt
 	};
 
-	ofstream fout("rmc1.csv");
+	ofstream fout("rmc2.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm1/";
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm2/";
 	auto sum = vector<vector<u64>> (shift, vector<u64> (types.size(), 0));
 
 	for (auto i=0ul; i<shift; ++i) {
 		for (auto it : fs::directory_iterator(path)) {
 			auto emb = fs::absolute(it);
-			auto *config = new sls_config(emb, 4000000, 32, 1<<i, 80, 1);
+			auto *config = new sls_config(emb, 500000, 64, 1<<i, 120, 1);
 
 			auto test_funs = map< string, function<void()> > ();
 			auto  pre_funs = map< string, function<void()> > ();
