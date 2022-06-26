@@ -32,7 +32,7 @@ struct sls_config {
 
 	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L, u32 val) 
 	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L), ram_ratio(val) {
-		gen_ids(true);
+		gen_ids(false);
 	};
 
 	void gen_ids(bool uniform) {

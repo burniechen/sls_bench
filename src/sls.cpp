@@ -247,14 +247,15 @@ void sls_ratio(vector<sls_config> &config_set) {
 			for (size_t j = curID; j < curID + L; ++j) {
 				u32 ID = config_set[i].ids[j];
 
-				if (ID > ratio_R-1) {
+				if (ID > (ratio_R-1)) {
 					emb_vec_io_unbuf(fd, v, ID);
 					for (size_t idx = 0; idx < C; ++idx)
 						ans[outID * C + idx] += v[idx];
 				}
-				else 
+				else {
 					for (size_t idx = 0; idx < C; ++idx) 
 						ans[outID * C + idx] += emb_set[i][ID * C + idx];
+				}
 			}
 			outID += 1;
 			curID += L;
@@ -296,6 +297,7 @@ void sls_opt(vector<sls_config> &config_set) {
 		lseek(fd, C * (max_idx*R_size) * sizeof(double), SEEK_SET);
 		read(fd, &emb[0], R_size * C * sizeof(double));
 		emb_set.push_back(emb);
+		max_idx_set.push_back(max_idx);
 
 		close(fd);
 	}
@@ -310,10 +312,12 @@ void sls_opt(vector<sls_config> &config_set) {
 		for (auto L : Lengths) {
 			for (size_t j = curID; j < curID + L; ++j) {
 				u32 ID = config_set[i].ids[j];
+				u32 emb_dis = ID - max_idx*R_size;
 
-				if (max_idx * R_size < ID and ID < max_idx * R_size)
+				if ((max_idx * R_size - 1) < ID and ID < ((max_idx+1) * R_size)) {
 					for (size_t idx = 0; idx < C; ++idx) 
-						ans[outID * C + idx] += emb_set[i][ID * C + idx];
+						ans[outID * C + idx] += emb_set[i][emb_dis * C + idx];
+				}
 				else {
 					emb_vec_io_unbuf(fd, v, ID);
 					for (size_t idx = 0; idx < C; ++idx)

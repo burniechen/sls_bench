@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	for (auto i=1; i<argc; ++i)
 		parse_arg(arg, argv[i], "=");
 
-	auto rnd = 2, shift = 9;
+	auto rnd = 1, shift = 9;
 
 	auto dir = string(), type = string();
 	auto R=0, C=0, L=0;

@@ -13,7 +13,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 2ul;
+	auto rnd = 1ul;
 	auto shift = 9ul;
 
 	auto types = vector<string> {
@@ -34,10 +34,10 @@ int main() {
 		sls_opt
 	};
 
-	ofstream fout("rmc2.csv");
+	ofstream fout("rmc3.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm2/";
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
 	auto sum = vector<vector<u64>> (shift, vector<u64> (types.size(), 0));
 
 	for (auto i=0ul; i<shift; ++i) {
@@ -45,7 +45,7 @@ int main() {
 		for (auto it : fs::directory_iterator(path)) {
 			auto emb = fs::absolute(it);
 
-			auto config = sls_config(emb, 500000, 64, 1<<i, 120, 1);
+			auto config = sls_config(emb, 2000000, 32, 1<<i, 20, 1);
 			config_set.push_back(config);
 		}
 
