@@ -11,7 +11,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 1;
+	auto rnd = 2;
 	auto shift = 9;
 	ofstream fout("rmc1.csv");
 	bool fout_flag = true;
