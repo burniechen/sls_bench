@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	for (auto i=1; i<argc; ++i)
 		parse_arg(arg, argv[i], "=");
 
-	auto rnd = 5, shift = 9;
+	auto rnd = 2, shift = 9;
 
 	auto dir = string(), type = string();
 	auto R=0, C=0, L=0;
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
-	void (*fun)(sls_config*) = nullptr;
+	void (*fun)(vector<sls_config> &) = nullptr;
 	if (type == "io_buf") fun = sls_io_buf;
 	if (type == "io_unbuf") fun = sls_io_unbuf;
 	if (type == "mmap") fun = sls_mmap;
@@ -59,28 +59,25 @@ int main(int argc, char *argv[]) {
 	if (type == "ratio") fun = sls_ratio;
 	if (type == "opt") fun = sls_opt;
 
-	auto sum = 0;
 	for (auto i=shift-1; i<shift; ++i) {
+		auto config_set = vector<sls_config> ();
 		for (auto it : fs::directory_iterator(dir)) {
 			auto emb = fs::absolute(it);
-			sls_config *config = new sls_config(emb, R, C, 1<<i, L, 1);
+			auto config = sls_config(emb, R, C, 1<<i, L, 1);
 
-			auto test_fun = bind(fun, config);
-			auto pre_fun = bind(pre_hook, config, type);
-			auto post_fun = bind(post_hook, config, type);
-
-			auto bench_fun = bm::real_time(test_fun, pre_fun, post_fun);
-
-			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_fun);
-			sum += (result.count()/1000);
-
-			printf("[Time]\n(%s, %d): %lu µs\n\n", emb.c_str(), (1<<i), result.count()/1000);
-
-			delete config;
+			config_set.push_back(config);
 		}
-	}
 
-	printf("[Break down] %d µs\n", sum);
+		auto test_fun = bind(fun, config_set);
+		auto pre_fun = bind(pre_hook, config_set[0], type);
+		auto post_fun = bind(post_hook, config_set[0], type);
+
+		auto bench_fun = bm::real_time(test_fun, pre_fun, post_fun);
+
+		auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_fun);
+
+		printf("[Time]\n(%s, %d): %lu µs\n\n", type.c_str(), (1<<i), result.count()/1000);
+	}
 
 	return 0;
 }

@@ -27,4 +27,4 @@ sls.o: src/sls.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f bench bench.o each each.o ratio ratio.o sls.o
+	rm -f bench each ratio *.o

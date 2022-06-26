@@ -11,36 +11,33 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 4;
-	auto shift = 7;
-	auto ratios = 9;
-	ofstream fout("rmc3.csv");
+	auto rnd = 1;
+	auto shift = 9;
+	ofstream fout("rmc1.csv");
 	bool fout_flag = true;
 
-	string path = "/home/nctu/dlrm-file/dlrm/table_rm3/";
-	auto sum = vector<vector<double>> (shift, vector<double> (ratios, 0));
+	string path = "/home/nctu/dlrm-file/dlrm/table_rm1/";
+	auto sum = vector<vector<u32>> (shift, vector<u32> (9, 0));
 
 	for (auto i=0; i<shift; ++i) {
-		for (auto it : fs::directory_iterator(path)) {
-			for (auto r=1; r<10; ++r) {
+		for (auto r=1ul; r<10; r++) {
+			auto config_set = vector<sls_config> ();
+			for (auto it : fs::directory_iterator(path)) {
 				string emb = fs::absolute(it);
-				sls_config *config = new sls_config(emb, 2000000, 32, 1<<i, 20, r);
-
-				auto test_ratio = bind(sls_ratio, config);
-				auto pre_ratio = bind(pre_hook, config, "ratio");
-				auto post_ratio = bind(post_hook, config, "ratio");
-
-				auto bench_ratio = bm::real_time(test_ratio, pre_ratio, post_ratio);
-
-				auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_ratio);
-
-				cout << "[Time]\n";
-				printf("[%u] (%s, %d): %lu\n", r, emb.c_str(), (1<<i), result.count()/1000);
-				sum[i][r-1] += (result.count()/1000);
-				cout << endl;
-
-				delete config;
+				auto config = sls_config(emb, 4000000, 32, 1<<i, 80, r);
+				config_set.push_back(config);
 			}
+
+			auto test_ratio = bind(sls_ratio, config_set);
+			auto pre_ratio = bind(pre_hook, config_set[0], "ratio");
+			auto post_ratio = bind(post_hook, config_set[0], "ratio");
+
+			auto bench_ratio = bm::real_time(test_ratio, pre_ratio, post_ratio);
+
+			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>, bench_ratio);
+
+			printf("[Time]\n[%d] (%lu:%lu) %lu µs\n", (1<<i), r, 10-r, result.count()/1000);
+			sum[i][r-1] = (result.count()/1000);
 		}
 	}
 
@@ -54,7 +51,7 @@ int main() {
 	if (fout_flag) {
 		for (auto i=0; i<shift; ++i) {
 			fout << (1<<i) << ',';
-			for (auto j=0; j<ratios; ++j)
+			for (auto j=0; j<9; ++j)
 				fout << sum[i][j] << ',';
 			fout << endl;
 		}

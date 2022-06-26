@@ -31,7 +31,9 @@ struct sls_config {
 	u32 ram_ratio;
 
 	sls_config(std::string filename, u32 R, u32 C, u32 K, u32 L, u32 val) 
-	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L), ram_ratio(val) {};
+	: table(filename), emb_row(R), emb_col(C), lengths(K), lengths_size(L), ram_ratio(val) {
+		gen_ids(true);
+	};
 
 	void gen_ids(bool uniform) {
 		std::random_device rd;
@@ -82,14 +84,14 @@ struct sls_config {
 	}
 };
 
-void pre_hook(sls_config *config, std::string pre_state);
-void post_hook(sls_config *config, std::string post_state);
+void pre_hook(sls_config &config, std::string pre_state);
+void post_hook(sls_config &config, std::string post_state);
 
-void sls_io_buf(sls_config *config);
-void sls_io_unbuf(sls_config *config);
-void sls_mmap(sls_config *config);
-void sls_ram(sls_config *config);
-void sls_ratio(sls_config *config);
-void sls_opt(sls_config *config);
+void sls_io_buf(std::vector<sls_config> &config_set);
+void sls_io_unbuf(std::vector<sls_config> &config_set);
+void sls_mmap(std::vector<sls_config> &config_set);
+void sls_ram(std::vector<sls_config> &config_set);
+void sls_ratio(std::vector<sls_config> &config_set);
+void sls_opt(std::vector<sls_config> &config_set);
 
 #endif

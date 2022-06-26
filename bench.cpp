@@ -13,7 +13,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 int main() {
-	auto rnd = 5ul;
+	auto rnd = 2ul;
 	auto shift = 9ul;
 
 	auto types = vector<string> {
@@ -25,7 +25,7 @@ int main() {
 		"opt"
 	};
 
-	void (*funs[])(sls_config*) = {
+	void (*funs[])(vector<sls_config> &) = {
 		sls_io_buf,
 		sls_io_unbuf,
 		sls_mmap,
@@ -41,56 +41,55 @@ int main() {
 	auto sum = vector<vector<u64>> (shift, vector<u64> (types.size(), 0));
 
 	for (auto i=0ul; i<shift; ++i) {
+		auto config_set = vector<sls_config> ();
 		for (auto it : fs::directory_iterator(path)) {
 			auto emb = fs::absolute(it);
-			auto *config = new sls_config(emb, 500000, 64, 1<<i, 120, 1);
 
-			auto test_funs = map< string, function<void()> > ();
-			auto  pre_funs = map< string, function<void()> > ();
-			auto post_funs = map< string, function<void()> > ();
+			auto config = sls_config(emb, 500000, 64, 1<<i, 120, 1);
+			config_set.push_back(config);
+		}
 
-			for (auto idx=0ul; idx<types.size(); ++idx) {
-				auto str = types[idx];
+		auto test_funs = map< string, function<void()> > ();
+		auto  pre_funs = map< string, function<void()> > ();
+		auto post_funs = map< string, function<void()> > ();
 
-				auto test = bind(funs[idx], config);
-				auto pre  = bind(pre_hook, config, str);
-				auto post = bind(post_hook, config, str);
+		for (auto idx=0ul; idx<types.size(); ++idx) {
+			auto str = types[idx];
 
-				test_funs.insert(make_pair(str, test));
-				pre_funs.insert(make_pair(str, pre));
-				post_funs.insert(make_pair(str, post));
-			}
+			auto test = bind(funs[idx], config_set);
+			auto pre  = bind(pre_hook, config_set[0], str);
+			auto post = bind(post_hook, config_set[0], str);
 
-			auto bench_io_buf = bm::real_time(test_funs["io_buf"], pre_funs["io_buf"], post_funs["io_buf"]);
-			auto bench_io_unbuf = bm::real_time(test_funs["io_unbuf"], pre_funs["io_unbuf"], post_funs["io_unbuf"]);
-			auto bench_mmap = bm::real_time(test_funs["mmap"], pre_funs["mmap"], post_funs["mmap"]);
-			auto bench_ram = bm::real_time(test_funs["ram"], pre_funs["ram"], post_funs["ram"]);
-			auto bench_ratio = bm::real_time(test_funs["ratio"], pre_funs["ratio"], post_funs["ratio"]);
-			auto bench_opt = bm::real_time(test_funs["opt"], pre_funs["opt"], post_funs["opt"]);
+			test_funs.insert(make_pair(str, test));
+			pre_funs.insert(make_pair(str, pre));
+			post_funs.insert(make_pair(str, post));
+		}
 
-			auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>,
-									bench_io_buf, 
-									bench_io_unbuf,
-									bench_mmap,
-									bench_ram,
-									bench_ratio,
-									bench_opt);
+		auto bench_io_buf = bm::real_time(test_funs["io_buf"], pre_funs["io_buf"], post_funs["io_buf"]);
+		auto bench_io_unbuf = bm::real_time(test_funs["io_unbuf"], pre_funs["io_unbuf"], post_funs["io_unbuf"]);
+		auto bench_mmap = bm::real_time(test_funs["mmap"], pre_funs["mmap"], post_funs["mmap"]);
+		auto bench_ram = bm::real_time(test_funs["ram"], pre_funs["ram"], post_funs["ram"]);
+		auto bench_ratio = bm::real_time(test_funs["ratio"], pre_funs["ratio"], post_funs["ratio"]);
+		auto bench_opt = bm::real_time(test_funs["opt"], pre_funs["opt"], post_funs["opt"]);
 
-			cout << "[Time]\n";
-			auto type_idx = 0ul;
-			for (auto e : result) {
-				printf("[%8s] (%s, %d): %8lu µs\n", 
-						types[type_idx].c_str(), emb.c_str(), (1<<i), e.count()/1000);
-				sum[i][type_idx] += (e.count()/1000);
-				type_idx++;
-			}
-			cout << endl;
+		auto result = bm::bench(rnd, bm::excl_avg<bm::nanos, 1>,
+								bench_io_buf, 
+								bench_io_unbuf,
+								bench_mmap,
+								bench_ram,
+								bench_ratio,
+								bench_opt);
 
-			delete config;
+		cout << "[Time]\n";
+		auto types_idx = 0;
+		for (auto e : result) {
+			sum[i][types_idx] = e.count()/1000;
+			printf("[%d] (%8s) %9lu µs\n", (1<<i), types[types_idx].c_str(), e.count()/1000);
+			types_idx++;
 		}
 	}
 
-	cout << "[Break down]\n";
+	cout << "\n[Break down]\n";
 	for (auto r : sum) {
 		for (auto e : r)
 			printf("%10lu", e);
